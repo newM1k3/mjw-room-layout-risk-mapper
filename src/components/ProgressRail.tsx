@@ -1,7 +1,7 @@
-import { Check, Settings, LayoutGrid as Layout, Grid2x2 as Grid, Box, AlertTriangle, Download } from 'lucide-react';
+import { Check, Settings, LayoutGrid as Layout, Grid2x2 as Grid, Box, AlertTriangle, Download, type LucideIcon } from 'lucide-react';
 import { AppStep } from '../types';
 
-const STEPS: { id: AppStep; label: string; Icon: React.FC<{ size?: number; className?: string }> }[] = [
+const STEPS: { id: AppStep; label: string; Icon: LucideIcon }[] = [
   { id: 'project', label: 'Project Setup', Icon: Settings },
   { id: 'canvas', label: 'Canvas', Icon: Layout },
   { id: 'zones', label: 'Zones', Icon: Grid },

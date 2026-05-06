@@ -90,10 +90,6 @@ export default function LayoutCanvas({
   const canvasW = px(project.roomWidth) + 2;
   const canvasH = px(project.roomHeight) + 2;
 
-  const getRelativePos = useCallback((e: React.MouseEvent) => {
-    const rect = containerRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  }, []);
 
   const handleMouseDown = (
     e: React.MouseEvent,

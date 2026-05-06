@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Plus, Trash2, CreditCard as Edit2, Check, X, DoorOpen, LogOut, Puzzle, Lock, Search, Package, Shield, UserCog, Route, Camera, Zap } from 'lucide-react';
+import { Plus, Trash2, CreditCard as Edit2, Check, X, DoorOpen, LogOut, Puzzle, Lock, Search, Package, Shield, UserCog, Route, Camera, Zap, type LucideIcon } from 'lucide-react';
 import { LayoutElement, ElementType, Intensity, LayoutZone, LayoutProject } from '../types';
 
-const TYPE_CONFIG: Record<ElementType, { label: string; Icon: React.FC<{ size?: number }> }> = {
+const TYPE_CONFIG: Record<ElementType, { label: string; Icon: LucideIcon }> = {
   door: { label: 'Door', Icon: DoorOpen },
   exit: { label: 'Exit', Icon: LogOut },
   puzzle_station: { label: 'Puzzle Station', Icon: Puzzle },

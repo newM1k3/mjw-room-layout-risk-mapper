@@ -52,6 +52,20 @@ export function buildMarkdownReport(
   lines.push(`- Improvements: ${report.improvementCount}`);
   lines.push('');
 
+  if (elements.length > 0) {
+    lines.push('## Layout Inventory');
+    lines.push('');
+    lines.push(`- Total mapped elements: ${elements.length}`);
+    const elementTypeCounts = elements.reduce<Record<string, number>>((counts, element) => {
+      counts[element.type] = (counts[element.type] ?? 0) + 1;
+      return counts;
+    }, {});
+    Object.entries(elementTypeCounts).forEach(([type, count]) => {
+      lines.push(`- ${type.replace('_', ' ')}: ${count}`);
+    });
+    lines.push('');
+  }
+
   if (report.issues.length > 0) {
     lines.push('## Issues');
     lines.push('');
