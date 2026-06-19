@@ -87,6 +87,7 @@ export interface RiskReport {
 }
 
 export type AppStep =
+  | 'welcome'
   | 'project'
   | 'canvas'
   | 'zones'
