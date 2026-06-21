@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Map, Zap, FlaskConical, FolderOpen } from 'lucide-react';
+import { Map, Zap, FlaskConical, DoorOpen } from 'lucide-react';
 import { AppStep, LayoutProject, LayoutZone, LayoutElement, RiskReport } from './types';
 import ProgressRail from './components/ProgressRail';
 import SummaryPanel from './components/SummaryPanel';
@@ -12,7 +12,14 @@ import RiskMapPanel from './steps/RiskMapPanel';
 import ExportPanel from './steps/ExportPanel';
 import { sampleProject, sampleZones, sampleElements } from './data/sampleProject';
 import { runLayoutRiskAudit } from './lib/riskEngine';
-import { pb, saveProject, loadProjects, type SavedProjectMeta } from './lib/pocketbase';
+import { pb } from './lib/pocketbase';
+import {
+  resolveRoomContext,
+  loadLayout,
+  saveLayout,
+  type RoomContext,
+  type RoomOption,
+} from './lib/layout';
 
 const ORDER: AppStep[] = ['project', 'canvas', 'zones', 'elements', 'risk', 'export'];
 
@@ -37,11 +44,12 @@ export default function App() {
   const [zones, setZones] = useState<LayoutZone[]>([]);
   const [elements, setElements] = useState<LayoutElement[]>([]);
   const [report, setReport] = useState<RiskReport | null>(null);
-  const [savedProjects, setSavedProjects] = useState<SavedProjectMeta[]>([]);
+  const [ctx, setCtx] = useState<RoomContext | null>(null);
+  const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showLoadMenu, setShowLoadMenu] = useState(false);
 
-  // SSO token handoff + load saved projects on mount
+  // SSO token handoff + resolve the venue's rooms, then load the active room's layout.
   useEffect(() => {
     async function initApp() {
       const params = new URLSearchParams(window.location.search);
@@ -53,40 +61,53 @@ export default function App() {
         } catch {
           pb.authStore.clear();
         }
-        window.history.replaceState({}, '', window.location.pathname);
       }
+      // Optional ?room= deep-link (forward-compatible with the dash launcher).
+      const roomParam = params.get('room');
+      window.history.replaceState({}, '', window.location.pathname);
 
-      const projects = await loadProjects();
-      setSavedProjects(projects);
+      const resolved = await resolveRoomContext();
+      if (!resolved) return; // not signed in / no venue → stays on the welcome/sample flow
+      setCtx(resolved);
+
+      const room = resolved.rooms.find((r) => r.id === roomParam) ?? resolved.rooms[0] ?? null;
+      if (room) {
+        setActiveRoomId(room.id);
+        const { project: p, zones: z, elements: e, report: r } = await loadLayout(room);
+        setProject(p);
+        setZones(z);
+        setElements(e);
+        setReport(r);
+      }
     }
     void initApp();
   }, []);
 
   // Auto-save when entering the export step
   const persistProject = useCallback(async () => {
-    if (!pb.authStore.isValid) return;
+    if (!pb.authStore.isValid || !ctx || !activeRoomId) return;
     setIsSaving(true);
     try {
-      await saveProject({ project, zones, elements, report });
-      const refreshed = await loadProjects();
-      setSavedProjects(refreshed);
+      await saveLayout(ctx, activeRoomId, { project, zones, elements, report });
     } catch (err) {
       console.warn('Room Layout Risk Mapper: project save failed', err);
     } finally {
       setIsSaving(false);
     }
-  }, [project, zones, elements, report]);
+  }, [ctx, activeRoomId, project, zones, elements, report]);
 
-  function loadSavedProject(meta: SavedProjectMeta) {
-    const { project: p, zones: z, elements: e, report: r } = meta.payload;
+  // Switch the active room: load (or Story-seed) its layout.
+  const selectRoom = useCallback(async (room: RoomOption) => {
+    setActiveRoomId(room.id);
+    const { project: p, zones: z, elements: e, report: r } = await loadLayout(room);
     setProject(p);
     setZones(z);
     setElements(e);
     setReport(r);
-    setCompleted(new Set(ORDER));
+    setCompleted(new Set());
     setStep('project');
     setShowLoadMenu(false);
-  }
+  }, []);
 
   const markComplete = (s: AppStep) => setCompleted((prev) => new Set([...prev, s]));
 
@@ -142,24 +163,24 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {savedProjects.length > 0 && (
+            {ctx && ctx.rooms.length > 0 && (
               <div className="relative">
                 <button
                   onClick={() => setShowLoadMenu((v) => !v)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/25 text-violet-400 text-xs font-semibold transition-colors"
                 >
-                  <FolderOpen size={12} /> Load Saved ({savedProjects.length})
+                  <DoorOpen size={12} /> Rooms ({ctx.rooms.length})
                 </button>
                 {showLoadMenu && (
                   <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-xl border border-white/10 bg-[#0d1120] shadow-xl py-1">
-                    {savedProjects.map((meta) => (
+                    {ctx.rooms.map((room) => (
                       <button
-                        key={meta.id}
-                        onClick={() => loadSavedProject(meta)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-white/5 transition-colors"
+                        key={room.id}
+                        onClick={() => selectRoom(room)}
+                        className={`w-full text-left px-4 py-2.5 transition-colors ${room.id === activeRoomId ? 'bg-violet-500/10' : 'hover:bg-white/5'}`}
                       >
-                        <div className="text-sm text-white font-medium truncate">{meta.title || 'Untitled Project'}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">{new Date(meta.savedAt).toLocaleDateString()}</div>
+                        <div className={`text-sm font-medium truncate ${room.id === activeRoomId ? 'text-violet-300' : 'text-white'}`}>{room.title}</div>
+                        {room.id === activeRoomId && <div className="text-xs text-violet-400 mt-0.5">Active</div>}
                       </button>
                     ))}
                   </div>

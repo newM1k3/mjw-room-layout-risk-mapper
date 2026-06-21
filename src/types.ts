@@ -86,6 +86,14 @@ export interface RiskReport {
   zoneRiskLevels: Record<string, Severity>;
 }
 
+/** The full tool document persisted per room (drawer `data`). */
+export interface LayoutRiskPayload {
+  project: LayoutProject;
+  zones: LayoutZone[];
+  elements: LayoutElement[];
+  report: RiskReport | null;
+}
+
 export type AppStep =
   | 'welcome'
   | 'project'
