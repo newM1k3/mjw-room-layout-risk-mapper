@@ -95,10 +95,10 @@ export default function ExportPanel({ project, zones, elements, report, onBack }
         <div className="text-sm font-semibold text-slate-300">Integration Hints</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
-            { label: 'Puzzle Flow Visualizer', desc: 'Overlay physical risk warnings onto the puzzle flow diagram.' },
-            { label: 'LockMap Studio', desc: 'Cross-reference lock placement density and reset logistics.' },
-            { label: 'Puzzle Dependency Auditor', desc: 'Flag physical risk at critical dependency nodes.' },
-            { label: 'Maintenance Log / RoomReady Ops', desc: 'Convert staff-access conflicts into pre-game reset checklists.' },
+            { label: 'Flow', desc: 'Overlay physical risk warnings onto the puzzle flow diagram.' },
+            { label: 'Locks', desc: 'Cross-reference lock placement density and reset logistics.' },
+            { label: 'Logic', desc: 'Flag physical risk at critical dependency nodes.' },
+            { label: 'Maintenance Log / Ready', desc: 'Convert staff-access conflicts into pre-game reset checklists.' },
           ].map((hint) => (
             <div key={hint.label} className="rounded-lg bg-white/5 p-3">
               <div className="text-xs font-semibold text-cyan-400 mb-1">{hint.label}</div>

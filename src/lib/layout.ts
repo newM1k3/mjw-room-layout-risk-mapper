@@ -1,4 +1,4 @@
-// layout.ts — Room Layout Risk Mapper on the unified spine (Phase 3).
+// layout.ts — Layout on the unified spine (Phase 3).
 //
 // A layout-risk map is a room-scoped drawer (tool_key=layout_risk, scope=room). The room is a
 // platform `experiences` record, resolved via the user's org membership; its venue is the parent

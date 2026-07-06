@@ -90,7 +90,7 @@ export default function App() {
     try {
       await saveLayout(ctx, activeRoomId, { project, zones, elements, report });
     } catch (err) {
-      console.warn('Room Layout Risk Mapper: project save failed', err);
+      console.warn('Layout: project save failed', err);
     } finally {
       setIsSaving(false);
     }
@@ -158,7 +158,7 @@ export default function App() {
               <Map size={18} className="text-cyan-400" />
             </div>
             <div>
-              <div className="text-base font-bold tracking-tight text-white leading-none">Room Layout Risk Mapper</div>
+              <div className="text-base font-bold tracking-tight text-white leading-none">Layout</div>
               <div className="text-xs text-slate-500 mt-0.5 leading-none">Escape Room Physical Design QA</div>
             </div>
           </div>
