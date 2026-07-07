@@ -8,6 +8,7 @@
 
 import pb from './pocketbase';
 import type { LayoutProject, LayoutRiskPayload } from '../types';
+import { isGeneratedRoomPayload, seedFromGeneratedRoom } from './seedFromGenerated';
 
 type Rec = Record<string, unknown>;
 
@@ -78,8 +79,16 @@ export async function resolveRoomContext(): Promise<RoomContext | null> {
   return null;
 }
 
-/** Seed a fresh layout-risk map from a room's Story so it never starts blank. */
+/**
+ * Seed a fresh layout-risk map from a room's Story so it never starts blank.
+ * Rooms sent from Create carry their full generated document in
+ * design_parameters — those seed act zones and a puzzle-station palette too.
+ */
 export function seedFromRoom(e: Rec): LayoutRiskPayload {
+  if (isGeneratedRoomPayload(e.design_parameters)) {
+    return seedFromGeneratedRoom(e.design_parameters.room, (e.status as string) || '');
+  }
+
   const project: LayoutProject = {
     id: `project_${Date.now()}`,
     title: (e.title as string) ?? '',
